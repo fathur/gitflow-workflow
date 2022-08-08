@@ -1,0 +1,46 @@
+# When creating a pull request we can generate
+# a unique url for particular pull request.
+# This url is using for test the feature, release
+# or hotfix before it merge to the base branch.
+#
+# To manage resource carefull we must identify the action type.
+# If the action type is pr created or reponed the we generate a new url,
+# if the action type is syncronized then we use existing
+# url to be redeployed, if the action type is PR closed we 
+# delete the url.
+name: testing-url
+on: 
+  pull_request:
+    types: [opened, synchronize, closed, reopened]
+    branches:
+      - 'develop'
+      - 'main'
+jobs:
+  create_testing_environment:
+    name: Generate URL for testing 
+    runs-on: ubuntu-latest
+    if: github.event.action == 'opened'
+    steps:
+      - name: Generate or guess subdomain url 
+        id: subdomain
+        run: |
+          PR_NUMBER=${{ github.event.number }}
+          BRANCH=$(echo ${GITHUB_HEAD_REF} | awk '{print tolower($0)}' | sed -e 's/\//-/g')
+          SUBDOMAIN=${BRANCH}-${PR_NUMBER}
+          echo "SUBDOMAIN=${SUBDOMAIN}" >> $GITHUB_ENV
+          echo "URL=https://${SUBDOMAIN}.fathur.com/" >> $GITHUB_ENV
+
+          #- name: Call a url
+          #run: |
+          #curl --location --request POST "https://github-workflow.fathur.com/sub-domains/${{ env.SUBDOMAIN }}"
+
+      - uses: mshick/add-pr-comment@v1
+        with:
+          repo-token-user-login: 'github-actions[bot]'
+          repo-token: ${{ secrets.ACCESS_TOKEN }}
+          message: |
+            Hello, I am a bot. Now you can use this url as your base url to test your changes
+
+            ${{ env.URL }}
+
+
