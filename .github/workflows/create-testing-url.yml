@@ -1,0 +1,60 @@
+# When creating a pull request we can generate
+# a unique url for particular pull request.
+# This url is using for test the feature, release
+# or hotfix before it merge to the base branch.
+#
+# To manage resource carefull we must identify the action type.
+# If the action type is pr created or reponed the we generate a new url,
+# if the action type is syncronized then we use existing
+# url to be redeployed, if the action type is PR closed we 
+# delete the url.
+name: testing-url
+on: 
+  pull_request:
+    types: [opened, synchronize, closed, reopened]
+    branches:
+      - 'develop'
+      - 'main'
+jobs:
+  generate_url:
+    name: Generate URL for testing 
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get the branch name 
+        id: branch
+        run: echo "BRANCH_NAME=$(echo ${GITHUB_HEAD_REF})" >> $GITHUB_ENV
+        # - name: Get branch name
+        # run: echo "${{ env.BRANCH_NAME }}"
+      - name: Get the PR number
+        id: number
+        run: |
+          echo "${{ github.event.number }}"
+
+      # If PR is opened, a brand new url must be created and codes deployed in new virtual host
+      # POST /sub-domains/:branch
+      - uses: mshick/add-pr-comment@v1
+        with:
+          repo-token-user-login: 'github-actions[bot]'
+          repo-token: ${{ secrets.ACCESS_TOKEN }}
+          message: |
+            "https://${{ github.event.number }}.fathur.com"
+
+      # If PR is synchronize use existing url and deploy updated code in existing virtual host
+      # PUT /sub-domains/:branch
+
+      
+      # If PR is closed a url must be removed from DNS, delete codes in virtual host, 
+      # but we save the url in database
+      # DELETE /sub-domains/:branch
+      - name: Delete when closed
+        if: github.event.action == 'closed'
+        run: |
+          curl --location --request GET 'https://cat-fact.herokuapp.com/facts'
+      
+      # If PR is reponed, we use url that stored in the database, create new DNS subdomain,
+      # deploy code in new virtual host.
+      - name: Activate when reopened
+        if: github.event.action == 'reopened'
+        run: |
+          curl --location --request GET 'https://cat-fact.herokuapp.com/facts'
+
