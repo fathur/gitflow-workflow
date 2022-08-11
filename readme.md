@@ -4,3 +4,5 @@
   - feature f6
   - feature f8
   - feature 11
+  - feature f9
+  - feature F10
