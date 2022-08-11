@@ -42,6 +42,6 @@ jobs:
           message: |
             Hello, I am a bot. Now you can use this url as your base url to test your changes
 
-            {{ env.URL }}
+            ${{ env.URL }}
 
 
