@@ -26,8 +26,9 @@ jobs:
         run: |
           PR_NUMBER=${{ github.event.number }}
           BRANCH=$(echo ${GITHUB_HEAD_REF} | awk '{print tolower($0)}' | sed -e 's/\//-/g')
-          echo "SUBDOMAIN=${BRANCH}-${PR_NUMBER}" >> $GITHUB_ENV
-          echo "URL=https://${{ env.SUBDOMAIN }}.fathur.com/" >> $GITHUB_ENV
+          SUBDOMAIN=${BRANCH}-${PR_NUMBER}
+          echo "SUBDOMAIN=${SUBDOMAIN}" >> $GITHUB_ENV
+          echo "URL=https://${SUBDOMAIN}.fathur.com/" >> $GITHUB_ENV
 
           #- name: Call a url
           #run: |
