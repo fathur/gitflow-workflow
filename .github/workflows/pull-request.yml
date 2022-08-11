@@ -53,7 +53,8 @@ jobs:
           --header "Accept: application/json" \
           --header "Authorization: Bearer qweerrtr" \
           --header 'Content-Type: application/x-www-form-urlencoded' \
-          --data-urlencode "branch=${{ needs.guess_subdomain.outputs.branch }}"
+          --data-urlencode "branch=${{ needs.guess_subdomain.outputs.branch }}" \
+          --data-urlencode "pr_number=${{ github.event.number }}"
 
       - uses: mshick/add-pr-comment@v1
         with:
