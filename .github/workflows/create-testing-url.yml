@@ -33,7 +33,6 @@ jobs:
       # If PR is opened, a brand new url must be created and codes deployed in new virtual host
       # POST /sub-domains/:branch
       - uses: mshick/add-pr-comment@v1
-        run: echo "BRANCH_NAME=$(echo ${GITHUB_HEAD_REF})" >> $GITHUB_ENV
         with:
           repo-token-user-login: 'github-actions[bot]'
           repo-token: ${{ secrets.ACCESS_TOKEN }}
