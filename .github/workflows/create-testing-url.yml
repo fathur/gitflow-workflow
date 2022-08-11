@@ -19,16 +19,19 @@ jobs:
   generate_url:
     name: Generate URL for testing 
     runs-on: ubuntu-latest
-    if: github.event.action == 'opened'
+    # if: github.event.action == 'opened'
     steps:
-      - name: Get the branch name 
-        id: branch
+      - name: Generate or guess subdomain url 
+        id: subdomain
         run: |
-          echo "BRANCH_NAME=$(echo ${GITHUB_HEAD_REF} | awk '{print tolower($0)}' | sed -e 's/\//-/g')" >> $GITHUB_ENV
+          PR_NUMBER=${{ github.event.number }}
+          BRANCH=$(echo ${GITHUB_HEAD_REF} | awk '{print tolower($0)}' | sed -e 's/\//-/g')
+          echo "SUBDOMAIN=${BRANCH}-${PR_NUMBER}" >> $GITHUB_ENV
+          echo "URL=https://${{ env.SUBDOMAIN }}.fathur.com/" >> $GITHUB_ENV
 
       - name: Call a url
         run: |
-          curl --location --request POST "https://github-workflow.fathur.com/sub-domains/${{ env.BRANCH_NAME }}"
+          curl --location --request POST "https://github-workflow.fathur.com/sub-domains/${{ env.SUBDOMAIN }}"
 
       # If PR is opened, a brand new url must be created and codes deployed in new virtual host
       # POST /sub-domains/:branch
@@ -39,19 +42,6 @@ jobs:
           message: |
             Hello, I am a bot. Now you can use this url as your base url to test your changes
 
-            https://${{ env.BRANCH_NAME }}-${{ github.event.number }}.fathur.com/
+            {{ env.URL }}
 
 
-  deploy_code:
-    name: Redeploy or delete code changes
-    runs-on: ubuntu-latest
-    if: github.event.action != 'opened'
-    steps:
-      - name: Get the branch name 
-        id: branch
-        run: |
-          echo "BRANCH_NAME=$(echo ${GITHUB_HEAD_REF} | awk '{print tolower($0)}' | sed -e 's/\//-/g')" >> $GITHUB_ENV
-
-      - name: Call a url
-        run: |
-          curl --location --request POST "https://github-workflow.fathur.com/sub-domains/${{ env.BRANCH_NAME }}"
