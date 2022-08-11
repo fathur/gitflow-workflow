@@ -27,7 +27,7 @@ jobs:
         run: |
           PR_NUMBER=${{ github.event.number }}
 
-          BRANCH=${GITHUB_HEAD_REF})
+          BRANCH=${GITHUB_HEAD_REF}
           echo "::set-output name=branch::${BRANCH}"
 
           BRANCH_NORMALIZED=$(echo ${BRANCH} | awk '{print tolower($0)}' | sed -e 's/\//-/g')
