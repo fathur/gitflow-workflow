@@ -1,0 +1,109 @@
+# When creating a pull request we can generate
+# a unique url for particular pull request.
+# This url is using for test the feature, release
+# or hotfix before it merge to the base branch.
+#
+# To manage resource carefull we must identify the action type.
+# If the action type is pr created or reponed the we generate a new url,
+# if the action type is syncronized then we use existing
+# url to be redeployed, if the action type is PR closed we 
+# delete the url.
+name: Testing
+on: 
+  pull_request:
+    types: [opened, synchronize, closed, reopened]
+    branches:
+      - 'develop'
+      - 'main'
+
+jobs:
+  
+  guess_subdomain:
+    name: Guess subdomain
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate or guess subdomain url 
+        id: subdomain
+        run: |
+          PR_NUMBER=${{ github.event.number }}
+          BRANCH=$(echo ${GITHUB_HEAD_REF} | awk '{print tolower($0)}' | sed -e 's/\//-/g')
+          SUBDOMAIN=${BRANCH}-${PR_NUMBER}
+          echo "::set-output name=subdomain::${SUBDOMAIN}" 
+          echo "::set-output name=url::https://${SUBDOMAIN}.fathur.com/"
+    outputs:
+      subdomain: ${{ steps.subdomain.outputs.subdomain }}
+      url: ${{ steps.subdomain.outputs.url }}
+
+  create:
+    name: Build environment 
+    needs: guess_subdomain
+    runs-on: ubuntu-latest
+    if: github.event.action == 'opened'
+    steps:
+
+          #- name: Call a url
+          #run: |
+          #curl --location --request POST "https://github-workflow.fathur.com/sub-domains/${{ env.SUBDOMAIN }}"
+
+      - uses: mshick/add-pr-comment@v1
+        with:
+          repo-token-user-login: 'github-actions[bot]'
+          repo-token: ${{ secrets.ACCESS_TOKEN }}
+          message: |
+            Hello, I am a bot. You're awesome! 🎊 🎉 You can now test your PR using the new environment in the URL below.
+
+            ✅ ${{ needs.guess_subdomain.outputs.url }}
+
+
+  redeploy:
+    name: Redeploy code changes 
+    needs: guess_subdomain
+    runs-on: ubuntu-latest
+    if: github.event.action == 'synchronize'
+    steps:
+      - name: test
+        run: |
+          echo ${{ needs.guess_subdomain.outputs.subdomain }}
+          echo ${{ needs.guess_subdomain.outputs.url }}
+
+          #- name: Call a url
+          #run: |
+          #curl --location --request POST "https://github-workflow.fathur.com/sub-domains/${{ env.SUBDOMAIN }}"
+
+  destroy:
+    name: Destroy environment 
+    needs: guess_subdomain
+    runs-on: ubuntu-latest
+    if: github.event.action == 'closed'
+    steps:
+
+          #- name: Call a url
+          #run: |
+          #curl --location --request POST "https://github-workflow.fathur.com/sub-domains/${{ env.SUBDOMAIN }}"
+
+      - uses: mshick/add-pr-comment@v1
+        with:
+          repo-token-user-login: 'github-actions[bot]'
+          repo-token: ${{ secrets.ACCESS_TOKEN }}
+          message: |
+            Hello, I am a bot. Sorry 😭, because you closed the PR, the URL below and its environment can no longer be used.
+
+            ❌ ${{ needs.guess_subdomain.outputs.url }}
+
+            Re-open the PR if you need to re-activate. Or, you can also create a new PR if you want to create a brand new URL and its environment.
+
+  
+  recreate:
+    name: Recreate environment 
+    needs: guess_subdomain
+    runs-on: ubuntu-latest
+    if: github.event.action == 'reopened'
+    steps:
+      - uses: mshick/add-pr-comment@v1
+        with:
+          repo-token-user-login: 'github-actions[bot]'
+          repo-token: ${{ secrets.ACCESS_TOKEN }}
+          message: |
+            Hello, I am a bot. Congrats! 🎉 🎊 The environment is now available after you reopen the PR using the URL below.
+
+            ✅ ${{ needs.guess_subdomain.outputs.url }}
