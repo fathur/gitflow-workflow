@@ -28,9 +28,7 @@ jobs:
           PR_NUMBER=${{ github.event.number }}
           BRANCH=$(echo ${GITHUB_HEAD_REF} | awk '{print tolower($0)}' | sed -e 's/\//-/g')
           SUBDOMAIN=${BRANCH}-${PR_NUMBER}
-          # echo "SUBDOMAIN=${SUBDOMAIN}" >> $GITHUB_ENV
           echo "::set-output name=subdomain::${SUBDOMAIN}" 
-          # echo "URL=https://${SUBDOMAIN}.fathur.com/" >> $GITHUB_ENV
           echo "::set-output name=url::https://${SUBDOMAIN}.fathur.com/"
     outputs:
       subdomain: ${{ steps.subdomain.outputs.subdomain }}
@@ -38,17 +36,10 @@ jobs:
 
   create_testing_environment:
     name: Build testing environment 
+    needs: guess_subdomain
     runs-on: ubuntu-latest
     if: github.event.action == 'opened'
     steps:
-      - name: Generate or guess subdomain url 
-        id: subdomain
-        run: |
-          PR_NUMBER=${{ github.event.number }}
-          BRANCH=$(echo ${GITHUB_HEAD_REF} | awk '{print tolower($0)}' | sed -e 's/\//-/g')
-          SUBDOMAIN=${BRANCH}-${PR_NUMBER}
-          echo "SUBDOMAIN=${SUBDOMAIN}" >> $GITHUB_ENV
-          echo "URL=https://${SUBDOMAIN}.fathur.com/" >> $GITHUB_ENV
 
           #- name: Call a url
           #run: |
@@ -61,7 +52,7 @@ jobs:
           message: |
             Hello, I am a bot. Now you can use this url as your base url to test your changes
 
-            ${{ env.URL }}
+            ${{ needs.guess_subdomain.outputs.url }}
 
 
   redeploy:
@@ -81,17 +72,10 @@ jobs:
 
   destroy_testing_environment:
     name: Destroy testing environment 
+    needs: guess_subdomain
     runs-on: ubuntu-latest
     if: github.event.action == 'closed'
     steps:
-      - name: Generate or guess subdomain url 
-        id: subdomain
-        run: |
-          PR_NUMBER=${{ github.event.number }}
-          BRANCH=$(echo ${GITHUB_HEAD_REF} | awk '{print tolower($0)}' | sed -e 's/\//-/g')
-          SUBDOMAIN=${BRANCH}-${PR_NUMBER}
-          echo "SUBDOMAIN=${SUBDOMAIN}" >> $GITHUB_ENV
-          echo "URL=https://${SUBDOMAIN}.fathur.com/" >> $GITHUB_ENV
 
           #- name: Call a url
           #run: |
@@ -104,6 +88,6 @@ jobs:
           message: |
             Hello, I am a bot. Sorry, the url below cannot be used anymore. 
 
-            ${{ env.URL }}
+            ${{ needs.guess_subdomain.outputs.url }}
 
 
