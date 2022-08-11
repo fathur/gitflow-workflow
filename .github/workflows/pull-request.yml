@@ -81,7 +81,16 @@ jobs:
           #run: |
           #curl --location --request POST "https://github-workflow.fathur.com/sub-domains/${{ env.SUBDOMAIN }}"
 
-      - uses: mshick/add-pr-comment@v1
+      - if: github.event.pull_request.merged == true
+        uses: mshick/add-pr-comment@v1
+        with:
+          repo-token-user-login: 'github-actions[bot]'
+          repo-token: ${{ secrets.ACCESS_TOKEN }}
+          message: |
+            Congrats, your PR merged
+
+      - if: github.event.pull_request.merged == false
+        uses: mshick/add-pr-comment@v1
         with:
           repo-token-user-login: 'github-actions[bot]'
           repo-token: ${{ secrets.ACCESS_TOKEN }}
