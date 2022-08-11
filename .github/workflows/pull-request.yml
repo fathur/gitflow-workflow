@@ -47,7 +47,7 @@ jobs:
     if: github.event.action == 'opened'
     steps:
 
-      - name: Call a url
+      - name: Call gitflow server
         run: |
           curl --location --request POST "${{ needs.guess_subdomain.outputs.gitflow_server }}/api/sub-domains/${{ needs.guess_subdomain.outputs.subdomain }}" \
           --header "Accept: application/json" \
@@ -71,14 +71,13 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event.action == 'synchronize'
     steps:
-      - name: test
+      - name: Call gitflow server
         run: |
-          echo ${{ needs.guess_subdomain.outputs.subdomain }}
-          echo ${{ needs.guess_subdomain.outputs.url }}
-
-          #- name: Call a url
-          #run: |
-          #curl --location --request POST "https://github-workflow.fathur.com/sub-domains/${{ env.SUBDOMAIN }}"
+          curl --location --request PUT "${{ needs.guess_subdomain.outputs.gitflow_server }}/api/sub-domains/${{ needs.guess_subdomain.outputs.subdomain }}" \
+          --header "Accept: application/json" \
+          --header "Authorization: Bearer qweerrtr" \
+          --header 'Content-Type: application/x-www-form-urlencoded' \
+          --data-urlencode "branch=${{ needs.guess_subdomain.outputs.branch }}"
 
   destroy:
     name: Destroy environment 
@@ -87,12 +86,19 @@ jobs:
     if: github.event.action == 'closed'
     steps:
 
-          #- name: Call a url
-          #run: |
-          #curl --location --request POST "https://github-workflow.fathur.com/sub-domains/${{ env.SUBDOMAIN }}"
-
       # When successfully merged, the base branch will updated and deployment on base branch will be activated.
       # 1. POST /sub-domains/{develop|main}
+      - if: github.event.pull_request.merged == true
+        name: Call gitflow server
+        run: |
+          curl --location --request DELETE "${{ needs.guess_subdomain.outputs.gitflow_server }}/api/sub-domains/${{ needs.guess_subdomain.outputs.subdomain }}" \
+          --header "Accept: application/json" \
+          --header "Authorization: Bearer qweerrtr" \
+          --header 'Content-Type: application/x-www-form-urlencoded' \
+          --data-urlencode "branch=${{ needs.guess_subdomain.outputs.branch }}" \
+          --data-urlencode "merged=true" \
+          --data-urlencode "target_branch=developer+master"
+
       # 2. create message reply in comment
       # 3. create message reply sucessfully deployed, this happening on server not in github action
       - if: github.event.pull_request.merged == true
@@ -107,6 +113,16 @@ jobs:
 
       # When closed
       # 1. POST /sub-domains/{develop|main}
+      - if: github.event.pull_request.merged == false
+        name: Call gitflow server
+        run: |
+          curl --location --request DELETE "${{ needs.guess_subdomain.outputs.gitflow_server }}/api/sub-domains/${{ needs.guess_subdomain.outputs.subdomain }}" \
+          --header "Accept: application/json" \
+          --header "Authorization: Bearer qweerrtr" \
+          --header 'Content-Type: application/x-www-form-urlencoded' \
+          --data-urlencode "branch=${{ needs.guess_subdomain.outputs.branch }}" \
+          --data-urlencode "merged=false"
+
       # 2. create message reply in comment
       - if: github.event.pull_request.merged == false
         uses: mshick/add-pr-comment@v1
@@ -127,6 +143,14 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event.action == 'reopened'
     steps:
+      - name: Call gitflow server
+        run: |
+          curl --location --request POST "${{ needs.guess_subdomain.outputs.gitflow_server }}/api/sub-domains/${{ needs.guess_subdomain.outputs.subdomain }}" \
+          --header "Accept: application/json" \
+          --header "Authorization: Bearer qweerrtr" \
+          --header 'Content-Type: application/x-www-form-urlencoded' \
+          --data-urlencode "branch=${{ needs.guess_subdomain.outputs.branch }}"
+
       - uses: mshick/add-pr-comment@v1
         with:
           repo-token-user-login: 'github-actions[bot]'
