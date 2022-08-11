@@ -23,7 +23,7 @@ jobs:
       - name: Get the branch name 
         id: branch
         run: |
-          echo "BRANCH_NAME=$(echo ${GITHUB_HEAD_REF} | sed -e 's/\//-/g')" >> $GITHUB_ENV
+          echo "BRANCH_NAME=$(echo ${GITHUB_HEAD_REF} | awk '{print tolower($0)}' | sed -e 's/\//-/g')" >> $GITHUB_ENV
 
       # If PR is opened, a brand new url must be created and codes deployed in new virtual host
       # POST /sub-domains/:branch
