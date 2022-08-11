@@ -29,9 +29,9 @@ jobs:
           echo "SUBDOMAIN=${BRANCH}-${PR_NUMBER}" >> $GITHUB_ENV
           echo "URL=https://${{ env.SUBDOMAIN }}.fathur.com/" >> $GITHUB_ENV
 
-      - name: Call a url
-        run: |
-          curl --location --request POST "https://github-workflow.fathur.com/sub-domains/${{ env.SUBDOMAIN }}"
+          #- name: Call a url
+          #run: |
+          #curl --location --request POST "https://github-workflow.fathur.com/sub-domains/${{ env.SUBDOMAIN }}"
 
       # If PR is opened, a brand new url must be created and codes deployed in new virtual host
       # POST /sub-domains/:branch
