@@ -38,7 +38,7 @@ jobs:
       branch: ${{ steps.subdomain.outputs.branch }}
       subdomain: ${{ steps.subdomain.outputs.subdomain }}
       url: ${{ steps.subdomain.outputs.url }}
-      gitflow_server: http://13.212.115.28
+      gitflow_server: http://13.214.207.68
 
   create:
     name: Build environment 
