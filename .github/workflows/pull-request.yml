@@ -52,7 +52,7 @@ jobs:
         with:
           url: '${{ needs.guess_subdomain.outputs.gitflow_server }}/api/sub-domains/${{ needs.guess_subdomain.outputs.subdomain }}'
           method: 'POST'
-          customHeaders: '{"Content-Type": "application/x-www-form-urlencoded", "Accept: "application/json"}'
+          customHeaders: '{"Content-Type": "application/x-www-form-urlencoded", "Accept": "application/json"}'
           data: 'branch=${{ needs.guess_subdomain.outputs.branch }}&pr_number=${{ github.event.number }}'
         # run: |
         #   curl --location --request POST "${{ needs.guess_subdomain.outputs.gitflow_server }}/api/sub-domains/${{ needs.guess_subdomain.outputs.subdomain }}" \
