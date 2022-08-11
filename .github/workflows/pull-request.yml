@@ -26,11 +26,16 @@ jobs:
         id: subdomain
         run: |
           PR_NUMBER=${{ github.event.number }}
-          BRANCH=$(echo ${GITHUB_HEAD_REF} | awk '{print tolower($0)}' | sed -e 's/\//-/g')
-          SUBDOMAIN=${BRANCH}-${PR_NUMBER}
+
+          BRANCH=${GITHUB_HEAD_REF})
+          echo "::set-output name=branch::${BRANCH}"
+
+          BRANCH_NORMALIZED=$(echo ${BRANCH} | awk '{print tolower($0)}' | sed -e 's/\//-/g')
+          SUBDOMAIN=${BRANCH_NORMALIZED}-${PR_NUMBER}
           echo "::set-output name=subdomain::${SUBDOMAIN}" 
           echo "::set-output name=url::https://${SUBDOMAIN}.fathur.com/"
     outputs:
+      branch: ${{ steps.subdomain.outputs.branch }}
       subdomain: ${{ steps.subdomain.outputs.subdomain }}
       url: ${{ steps.subdomain.outputs.url }}
 
@@ -41,16 +46,20 @@ jobs:
     if: github.event.action == 'opened'
     steps:
 
-          #- name: Call a url
-          #run: |
-          #curl --location --request POST "https://github-workflow.fathur.com/sub-domains/${{ env.SUBDOMAIN }}"
+      - name: Call a url
+        run: |
+          curl --location --request POST "${{ secrets.GITFLOW_SERVER_URL }}/sub-domains/${{ env.SUBDOMAIN }}" \
+          --header "Accept: application/json" \
+          --header "Authorization: Bearer qweerrtr" \
+          --header 'Content-Type: application/x-www-form-urlencoded' \
+          --data-urlencode "branch=${{ needs.guess_subdomain.outputs.branch }}"
 
       - uses: mshick/add-pr-comment@v1
         with:
           repo-token-user-login: 'github-actions[bot]'
           repo-token: ${{ secrets.ACCESS_TOKEN }}
           message: |
-            Hello, I am a bot. You're awesome! 🎊 🎉 You can now test your PR using the new environment in the URL below.
+            Hello, I am a bot 🤖. You're awesome! 🎊 🎉 You can now test your PR using the new environment in the URL below.
 
             ✅ ${{ needs.guess_subdomain.outputs.url }}
 
@@ -81,21 +90,30 @@ jobs:
           #run: |
           #curl --location --request POST "https://github-workflow.fathur.com/sub-domains/${{ env.SUBDOMAIN }}"
 
+      # When successfully merged, the base branch will updated and deployment on base branch will be activated.
+      # 1. POST /sub-domains/{develop|main}
+      # 2. create message reply in comment
+      # 3. create message reply sucessfully deployed, this happening on server not in github action
       - if: github.event.pull_request.merged == true
         uses: mshick/add-pr-comment@v1
         with:
           repo-token-user-login: 'github-actions[bot]'
           repo-token: ${{ secrets.ACCESS_TOKEN }}
           message: |
-            Congrats, your PR merged
+            Hello, I am a bot 🤖. Congrats 🎊 🎉, your PR successfully merged, the URL below and its environment can no longer be used.
 
+            ❌ ${{ needs.guess_subdomain.outputs.url }}
+
+      # When closed
+      # 1. POST /sub-domains/{develop|main}
+      # 2. create message reply in comment
       - if: github.event.pull_request.merged == false
         uses: mshick/add-pr-comment@v1
         with:
           repo-token-user-login: 'github-actions[bot]'
           repo-token: ${{ secrets.ACCESS_TOKEN }}
           message: |
-            Hello, I am a bot. Sorry 😭, because you closed the PR, the URL below and its environment can no longer be used.
+            Hello, I am a bot 🤖. Sorry 😭, because you closed the PR, the URL below and its environment can no longer be used.
 
             ❌ ${{ needs.guess_subdomain.outputs.url }}
 
@@ -113,6 +131,7 @@ jobs:
           repo-token-user-login: 'github-actions[bot]'
           repo-token: ${{ secrets.ACCESS_TOKEN }}
           message: |
-            Hello, I am a bot. Congrats! 🎉 🎊 The environment is now available after you reopen the PR using the URL below.
+            Hello, I am a bot 🤖. Congrats! 🎉 🎊 The environment is now available after you reopen the PR using the URL below.
 
             ✅ ${{ needs.guess_subdomain.outputs.url }}
+
