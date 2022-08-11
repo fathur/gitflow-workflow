@@ -38,7 +38,7 @@ jobs:
       branch: ${{ steps.subdomain.outputs.branch }}
       subdomain: ${{ steps.subdomain.outputs.subdomain }}
       url: ${{ steps.subdomain.outputs.url }}
-      gitflow_server: http://13.212.115.28
+      gitflow_server: http://13.214.207.68
 
   create:
     name: Build environment 
@@ -53,7 +53,8 @@ jobs:
           --header "Accept: application/json" \
           --header "Authorization: Bearer qweerrtr" \
           --header 'Content-Type: application/x-www-form-urlencoded' \
-          --data-urlencode "branch=${{ needs.guess_subdomain.outputs.branch }}"
+          --data-urlencode "branch=${{ needs.guess_subdomain.outputs.branch }}" \
+          --data-urlencode "pr_number=${{ github.event.number }}"
 
       - uses: mshick/add-pr-comment@v1
         with:
@@ -107,9 +108,8 @@ jobs:
           repo-token-user-login: 'github-actions[bot]'
           repo-token: ${{ secrets.ACCESS_TOKEN }}
           message: |
-            Hello, I am a bot 🤖. Congrats 🎊 🎉, your PR successfully merged, the URL below and its environment can no longer be used.
-
-            ❌ ${{ needs.guess_subdomain.outputs.url }}
+            Hello, I am a bot 🤖. Congrats! your PR successfully merged 🎊 🎊.
+            The previous generated URL and its environment can no longer be used.
 
       # When closed
       # 1. POST /sub-domains/{develop|main}
@@ -151,11 +151,11 @@ jobs:
           --header 'Content-Type: application/x-www-form-urlencoded' \
           --data-urlencode "branch=${{ needs.guess_subdomain.outputs.branch }}"
 
-      - uses: mshick/add-pr-comment@v1
-        with:
-          repo-token-user-login: 'github-actions[bot]'
-          repo-token: ${{ secrets.ACCESS_TOKEN }}
-          message: |
-            Hello, I am a bot 🤖. Congrats! 🎉 🎊 The environment is now available after you reopen the PR using the URL below.
+      # - uses: mshick/add-pr-comment@v1
+      #   with:
+      #     repo-token-user-login: 'github-actions[bot]'
+      #     repo-token: ${{ secrets.ACCESS_TOKEN }}
+      #     message: |
+      #       Hello, I am a bot 🤖. Congrats! 🎉 🎊 The environment is now available after you reopen the PR using the URL below.
 
-            ✅ ${{ needs.guess_subdomain.outputs.url }}
+      #       ✅ ${{ needs.guess_subdomain.outputs.url }}
