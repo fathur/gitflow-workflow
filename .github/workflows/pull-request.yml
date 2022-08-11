@@ -50,9 +50,9 @@ jobs:
           repo-token-user-login: 'github-actions[bot]'
           repo-token: ${{ secrets.ACCESS_TOKEN }}
           message: |
-            Hello, I am a bot. You're awesome! You can now test your PR using the URL below and its environment.
+            Hello, I am a bot. You're awesome! 🎊 🎉 You can now test your PR using the URL below and its environment.
 
-            ${{ needs.guess_subdomain.outputs.url }}
+            ✅ ${{ needs.guess_subdomain.outputs.url }}
 
 
   redeploy:
@@ -86,12 +86,11 @@ jobs:
           repo-token-user-login: 'github-actions[bot]'
           repo-token: ${{ secrets.ACCESS_TOKEN }}
           message: |
-            Hello, I am a bot. Sorry, because you closed the PR, the URL below and its environment can no longer be used.
+            Hello, I am a bot. Sorry 😭, because you closed the PR, the URL below and its environment can no longer be used.
 
-            ${{ needs.guess_subdomain.outputs.url }}
+            ❌ ${{ needs.guess_subdomain.outputs.url }}
 
-            Re-open the PR if you need to re-activate the URL above and its environment. 
-            You can also create a new PR if you want to create a brand new URL and its environment.
+            Re-open the PR if you need to re-activate. Or, you can also create a new PR if you want to create a brand new URL and its environment.
 
   
   recreate:
@@ -105,6 +104,6 @@ jobs:
           repo-token-user-login: 'github-actions[bot]'
           repo-token: ${{ secrets.ACCESS_TOKEN }}
           message: |
-            Hello, I am a bot. Congrats! The url and environment are now available after you reopen the PR.
+            Hello, I am a bot. Congrats! 🎉 🎊 The url and environment are now available after you reopen the PR.
 
-            ${{ needs.guess_subdomain.outputs.url }}
+            ✅ ${{ needs.guess_subdomain.outputs.url }}
