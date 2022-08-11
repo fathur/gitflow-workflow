@@ -38,6 +38,7 @@ jobs:
       branch: ${{ steps.subdomain.outputs.branch }}
       subdomain: ${{ steps.subdomain.outputs.subdomain }}
       url: ${{ steps.subdomain.outputs.url }}
+      gitflow_server: http://13.212.115.28
 
   create:
     name: Build environment 
@@ -48,7 +49,7 @@ jobs:
 
       - name: Call a url
         run: |
-          curl --location --request POST "${{ secrets.GITFLOW_SERVER_URL }}/sub-domains/${{ needs.guess_subdomain.outputs.subdomain }}" \
+          curl --location --request POST "${{ needs.guess_subdomain.outputs.gitflow_server }}/api/sub-domains/${{ needs.guess_subdomain.outputs.subdomain }}" \
           --header "Accept: application/json" \
           --header "Authorization: Bearer qweerrtr" \
           --header 'Content-Type: application/x-www-form-urlencoded' \
