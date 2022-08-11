@@ -22,13 +22,8 @@ jobs:
     steps:
       - name: Get the branch name 
         id: branch
-        run: echo "BRANCH_NAME=$(echo ${GITHUB_HEAD_REF})" >> $GITHUB_ENV
-        # - name: Get branch name
-        # run: echo "${{ env.BRANCH_NAME }}"
-      - name: Get the PR number
-        id: number
         run: |
-          echo "${{ github.event.number }}"
+          echo "BRANCH_NAME=$(echo ${GITHUB_HEAD_REF} | sed -e 's/\//-/g')" >> $GITHUB_ENV
 
       # If PR is opened, a brand new url must be created and codes deployed in new virtual host
       # POST /sub-domains/:branch
