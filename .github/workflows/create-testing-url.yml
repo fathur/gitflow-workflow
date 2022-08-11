@@ -33,11 +33,12 @@ jobs:
       # If PR is opened, a brand new url must be created and codes deployed in new virtual host
       # POST /sub-domains/:branch
       - uses: mshick/add-pr-comment@v1
+        run: echo "BRANCH_NAME=$(echo ${GITHUB_HEAD_REF})" >> $GITHUB_ENV
         with:
           repo-token-user-login: 'github-actions[bot]'
           repo-token: ${{ secrets.ACCESS_TOKEN }}
           message: |
-            "https://${{ github.event.number }}.fathur.com"
+            "https://${{ env.BRANCH_NAME }}-${{ github.event.number }}.fathur.com"
 
       # If PR is synchronize use existing url and deploy updated code in existing virtual host
       # PUT /sub-domains/:branch
