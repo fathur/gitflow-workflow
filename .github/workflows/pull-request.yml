@@ -102,14 +102,14 @@ jobs:
 
       # 2. create message reply in comment
       # 3. create message reply sucessfully deployed, this happening on server not in github action
-      - if: github.event.pull_request.merged == true
-        uses: mshick/add-pr-comment@v1
-        with:
-          repo-token-user-login: 'github-actions[bot]'
-          repo-token: ${{ secrets.ACCESS_TOKEN }}
-          message: |
-            Hello, I am a bot 🤖. Congrats! your PR successfully merged 🎊 🎊.
-            The previous generated URL and its environment can no longer be used.
+      # - if: github.event.pull_request.merged == true
+      #   uses: mshick/add-pr-comment@v1
+      #   with:
+      #     repo-token-user-login: 'github-actions[bot]'
+      #     repo-token: ${{ secrets.ACCESS_TOKEN }}
+      #     message: |
+      #       Hello, I am a bot 🤖. Congrats! your PR successfully merged 🎊 🎊.
+      #       The previous generated URL and its environment can no longer be used.
 
       # When closed
       # 1. POST /sub-domains/{develop|main}
