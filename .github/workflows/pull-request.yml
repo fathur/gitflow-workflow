@@ -124,17 +124,17 @@ jobs:
           --data-urlencode "merged=false"
 
       # 2. create message reply in comment
-      - if: github.event.pull_request.merged == false
-        uses: mshick/add-pr-comment@v1
-        with:
-          repo-token-user-login: 'github-actions[bot]'
-          repo-token: ${{ secrets.ACCESS_TOKEN }}
-          message: |
-            Hello, I am a bot 🤖. Sorry 😭, because you closed the PR, the URL below and its environment can no longer be used.
+      # - if: github.event.pull_request.merged == false
+      #   uses: mshick/add-pr-comment@v1
+      #   with:
+      #     repo-token-user-login: 'github-actions[bot]'
+      #     repo-token: ${{ secrets.ACCESS_TOKEN }}
+      #     message: |
+      #       Hello, I am a bot 🤖. Sorry 😭, because you closed the PR, the URL below and its environment can no longer be used.
 
-            ❌ ${{ needs.guess_subdomain.outputs.url }}
+      #       ❌ ${{ needs.guess_subdomain.outputs.url }}
 
-            Re-open the PR if you need to re-activate. Or, you can also create a new PR if you want to create a brand new URL and its environment.
+      #       Re-open the PR if you need to re-activate. Or, you can also create a new PR if you want to create a brand new URL and its environment.
 
   
   recreate:
