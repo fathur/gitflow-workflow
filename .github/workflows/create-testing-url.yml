@@ -32,8 +32,9 @@ jobs:
           repo-token-user-login: 'github-actions[bot]'
           repo-token: ${{ secrets.ACCESS_TOKEN }}
           message: |
-            Now you can use this url as your base url to test your changes
-            https://${{ env.BRANCH_NAME }}-${{ github.event.number }}.fathur.com
+            Hello, I am a bot. Now you can use this url as your base url to test your changes
+
+            https://${{ env.BRANCH_NAME }}-${{ github.event.number }}.fathur.com/
 
       # If PR is synchronize use existing url and deploy updated code in existing virtual host
       # PUT /sub-domains/:branch
