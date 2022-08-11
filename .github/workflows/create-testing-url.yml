@@ -8,16 +8,36 @@
 # if the action type is syncronized then we use existing
 # url to be redeployed, if the action type is PR closed we 
 # delete the url.
-name: testing-url
+name: Testing
 on: 
   pull_request:
     types: [opened, synchronize, closed, reopened]
     branches:
       - 'develop'
       - 'main'
+
 jobs:
+  
+  guess_subdomain:
+    name: Guess subdomain
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate or guess subdomain url 
+        id: subdomain
+        run: |
+          PR_NUMBER=${{ github.event.number }}
+          BRANCH=$(echo ${GITHUB_HEAD_REF} | awk '{print tolower($0)}' | sed -e 's/\//-/g')
+          SUBDOMAIN=${BRANCH}-${PR_NUMBER}
+          # echo "SUBDOMAIN=${SUBDOMAIN}" >> $GITHUB_ENV
+          echo "::set-output name=subdomain::${SUBDOMAIN}" 
+          # echo "URL=https://${SUBDOMAIN}.fathur.com/" >> $GITHUB_ENV
+          echo "::set-output name=url::https://${SUBDOMAIN}.fathur.com/"
+    outputs:
+      subdomain: ${{ steps.subdomain.outputs.subdomain }}
+      url: ${{ steps.subdomain.outputs.url }}
+
   create_testing_environment:
-    name: Generate URL for testing 
+    name: Build testing environment 
     runs-on: ubuntu-latest
     if: github.event.action == 'opened'
     steps:
@@ -40,6 +60,49 @@ jobs:
           repo-token: ${{ secrets.ACCESS_TOKEN }}
           message: |
             Hello, I am a bot. Now you can use this url as your base url to test your changes
+
+            ${{ env.URL }}
+
+
+  redeploy:
+    name: Redeploy code changes 
+    needs: guess_subdomain
+    runs-on: ubuntu-latest
+    if: github.event.action == 'synchronize'
+    steps:
+      - name: test
+        run: |
+          echo ${{ needs.guess_subdomain.outputs.subdomain }}
+          echo ${{ needs.guess_subdomain.outputs.url }}
+
+          #- name: Call a url
+          #run: |
+          #curl --location --request POST "https://github-workflow.fathur.com/sub-domains/${{ env.SUBDOMAIN }}"
+
+  destroy_testing_environment:
+    name: Destroy testing environment 
+    runs-on: ubuntu-latest
+    if: github.event.action == 'closed'
+    steps:
+      - name: Generate or guess subdomain url 
+        id: subdomain
+        run: |
+          PR_NUMBER=${{ github.event.number }}
+          BRANCH=$(echo ${GITHUB_HEAD_REF} | awk '{print tolower($0)}' | sed -e 's/\//-/g')
+          SUBDOMAIN=${BRANCH}-${PR_NUMBER}
+          echo "SUBDOMAIN=${SUBDOMAIN}" >> $GITHUB_ENV
+          echo "URL=https://${SUBDOMAIN}.fathur.com/" >> $GITHUB_ENV
+
+          #- name: Call a url
+          #run: |
+          #curl --location --request POST "https://github-workflow.fathur.com/sub-domains/${{ env.SUBDOMAIN }}"
+
+      - uses: mshick/add-pr-comment@v1
+        with:
+          repo-token-user-login: 'github-actions[bot]'
+          repo-token: ${{ secrets.ACCESS_TOKEN }}
+          message: |
+            Hello, I am a bot. Sorry, the url below cannot be used anymore. 
 
             ${{ env.URL }}
 
