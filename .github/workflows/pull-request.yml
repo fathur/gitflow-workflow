@@ -50,7 +50,7 @@ jobs:
           repo-token-user-login: 'github-actions[bot]'
           repo-token: ${{ secrets.ACCESS_TOKEN }}
           message: |
-            Hello, I am a bot. You're awesome! 🎊 🎉 You can now test your PR using the URL below and its environment.
+            Hello, I am a bot. You're awesome! 🎊 🎉 You can now test your PR using the new environment in the URL below.
 
             ✅ ${{ needs.guess_subdomain.outputs.url }}
 
@@ -104,6 +104,6 @@ jobs:
           repo-token-user-login: 'github-actions[bot]'
           repo-token: ${{ secrets.ACCESS_TOKEN }}
           message: |
-            Hello, I am a bot. Congrats! 🎉 🎊 The url and environment are now available after you reopen the PR.
+            Hello, I am a bot. Congrats! 🎉 🎊 The environment is now available after you reopen the PR using the URL below.
 
             ✅ ${{ needs.guess_subdomain.outputs.url }}
