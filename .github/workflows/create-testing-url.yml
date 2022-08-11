@@ -19,7 +19,7 @@ jobs:
   generate_url:
     name: Generate URL for testing 
     runs-on: ubuntu-latest
-    if: github.event.action == 'synchronize'
+    if: github.event.action == 'opened'
     steps:
       - name: Get the branch name 
         id: branch
@@ -28,7 +28,7 @@ jobs:
 
       - name: Call a url
         run: |
-          curl --location --request POST 'https://github-workflow.fathur.com/sub-domains/'
+          curl --location --request POST "https://github-workflow.fathur.com/sub-domains/${{ env.BRANCH_NAME }}"
 
       # If PR is opened, a brand new url must be created and codes deployed in new virtual host
       # POST /sub-domains/:branch
@@ -41,18 +41,17 @@ jobs:
 
             https://${{ env.BRANCH_NAME }}-${{ github.event.number }}.fathur.com/
 
-      # If PR is synchronize use existing url and deploy updated code in existing virtual host
-      # PUT /sub-domains/:branch
 
-      
-      # If PR is closed a url must be removed from DNS, delete codes in virtual host, 
-      # but we save the url in database
-      # DELETE /sub-domains/:branch
-      
-      # If PR is reponed, we use url that stored in the database, create new DNS subdomain,
-      # deploy code in new virtual host.
-      - name: Activate when reopened
-        if: github.event.action == 'reopened'
+  deploy_code:
+    name: Redeploy or delete code changes
+    runs-on: ubuntu-latest
+    if: github.event.action != 'opened'
+    steps:
+      - name: Get the branch name 
+        id: branch
         run: |
-          curl --location --request GET 'https://cat-fact.herokuapp.com/facts'
+          echo "BRANCH_NAME=$(echo ${GITHUB_HEAD_REF} | awk '{print tolower($0)}' | sed -e 's/\//-/g')" >> $GITHUB_ENV
 
+      - name: Call a url
+        run: |
+          curl --location --request POST "https://github-workflow.fathur.com/sub-domains/${{ env.BRANCH_NAME }}"
