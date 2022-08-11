@@ -54,51 +54,39 @@ jobs:
           method: 'POST'
           customHeaders: '{"Content-Type": "application/x-www-form-urlencoded", "Accept": "application/json"}'
           data: 'branch=${{ needs.guess_subdomain.outputs.branch }}&pr_number=${{ github.event.number }}'
-        # run: |
-        #   curl --location --request POST "${{ needs.guess_subdomain.outputs.gitflow_server }}/api/sub-domains/${{ needs.guess_subdomain.outputs.subdomain }}" \
-        #   --header "Accept: application/json" \
-        #   --header "Authorization: Bearer qweerrtr" \
-        #   --header 'Content-Type: application/x-www-form-urlencoded' \
-        #   --data-urlencode "branch=${{ needs.guess_subdomain.outputs.branch }}" \
-        #   --data-urlencode "pr_number=${{ github.event.number }}"
 
       - if: github.event.action == 'synchronize'
         name: Call synchronize PR
-        run: |
-          curl --location --request PUT "${{ needs.guess_subdomain.outputs.gitflow_server }}/api/sub-domains/${{ needs.guess_subdomain.outputs.subdomain }}" \
-          --header "Accept: application/json" \
-          --header "Authorization: Bearer qweerrtr" \
-          --header 'Content-Type: application/x-www-form-urlencoded' \
-          --data-urlencode "branch=${{ needs.guess_subdomain.outputs.branch }}"
+        uses: fjogeleit/http-request-action@v1
+        with:
+          url: '${{ needs.guess_subdomain.outputs.gitflow_server }}/api/sub-domains/${{ needs.guess_subdomain.outputs.subdomain }}'
+          method: 'PUT'
+          customHeaders: '{"Content-Type": "application/x-www-form-urlencoded", "Accept": "application/json"}'
+          data: 'branch=${{ needs.guess_subdomain.outputs.branch }}&pr_number=${{ github.event.number }}'
 
       - if: github.event.action == 'closed' && github.event.pull_request.merged == true
         name: Call merge PR
-        run: |
-          curl --location --request DELETE "${{ needs.guess_subdomain.outputs.gitflow_server }}/api/sub-domains/${{ needs.guess_subdomain.outputs.subdomain }}" \
-          --header "Accept: application/json" \
-          --header "Authorization: Bearer qweerrtr" \
-          --header 'Content-Type: application/x-www-form-urlencoded' \
-          --data-urlencode "branch=${{ needs.guess_subdomain.outputs.branch }}" \
-          --data-urlencode "merged=true" \
-          --data-urlencode "target_branch=developer+master" \
-          --data-urlencode "pr_number=${{ github.event.number }}"
+        uses: fjogeleit/http-request-action@v1
+        with:
+          url: '${{ needs.guess_subdomain.outputs.gitflow_server }}/api/sub-domains/${{ needs.guess_subdomain.outputs.subdomain }}'
+          method: 'DELETE'
+          customHeaders: '{"Content-Type": "application/x-www-form-urlencoded", "Accept": "application/json"}'
+          data: 'branch=${{ needs.guess_subdomain.outputs.branch }}&pr_number=${{ github.event.number }}&merged=true&target_branch=developer+master'
 
       - if: github.event.action == 'closed' && github.event.pull_request.merged == false
         name: Call close PR
-        run: |
-          curl --location --request DELETE "${{ needs.guess_subdomain.outputs.gitflow_server }}/api/sub-domains/${{ needs.guess_subdomain.outputs.subdomain }}" \
-          --header "Accept: application/json" \
-          --header "Authorization: Bearer qweerrtr" \
-          --header 'Content-Type: application/x-www-form-urlencoded' \
-          --data-urlencode "branch=${{ needs.guess_subdomain.outputs.branch }}" \
-          --data-urlencode "merged=false" \
-          --data-urlencode "pr_number=${{ github.event.number }}"
+        uses: fjogeleit/http-request-action@v1
+        with:
+          url: '${{ needs.guess_subdomain.outputs.gitflow_server }}/api/sub-domains/${{ needs.guess_subdomain.outputs.subdomain }}'
+          method: 'DELETE'
+          customHeaders: '{"Content-Type": "application/x-www-form-urlencoded", "Accept": "application/json"}'
+          data: 'branch=${{ needs.guess_subdomain.outputs.branch }}&pr_number=${{ github.event.number }}&merged=false'
 
       - if: github.event.action == 'reopened'
         name: Call reopen PR
-        run: |
-          curl --location --request POST "${{ needs.guess_subdomain.outputs.gitflow_server }}/api/sub-domains/${{ needs.guess_subdomain.outputs.subdomain }}" \
-          --header "Accept: application/json" \
-          --header "Authorization: Bearer qweerrtr" \
-          --header 'Content-Type: application/x-www-form-urlencoded' \
-          --data-urlencode "branch=${{ needs.guess_subdomain.outputs.branch }}"
+        uses: fjogeleit/http-request-action@v1
+        with:
+          url: '${{ needs.guess_subdomain.outputs.gitflow_server }}/api/sub-domains/${{ needs.guess_subdomain.outputs.subdomain }}'
+          method: 'POST'
+          customHeaders: '{"Content-Type": "application/x-www-form-urlencoded", "Accept": "application/json"}'
+          data: 'branch=${{ needs.guess_subdomain.outputs.branch }}&pr_number=${{ github.event.number }}'
