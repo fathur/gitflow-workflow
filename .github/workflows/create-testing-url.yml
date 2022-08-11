@@ -19,7 +19,7 @@ jobs:
   generate_url:
     name: Generate URL for testing 
     runs-on: ubuntu-latest
-    if: github.event.action == 'opened'
+    if: github.event.action == 'synchronize'
     steps:
       - name: Get the branch name 
         id: branch
