@@ -38,19 +38,19 @@ jobs:
           DEVELOP_BRANCH="develop"
           MASTER_BRANCH="main"
           
+          echo "GITFLOW_ALLOWED=false" >> $GITHUB_ENV
+          
           if [[ ${HEAD_BRANCH} == "feature/"* ]]
           then
 
             if [ ${BASE_BRANCH} == ${DEVELOP_BRANCH} ]
             then
               echo "GITFLOW_ALLOWED=true" >> $GITHUB_ENV
-              exit 0
             fi
 
             if [[ ${BASE_BRANCH} == "release/"* ]]
             then
               echo "GITFLOW_ALLOWED=true" >> $GITHUB_ENV
-              exit 0
             fi
           fi
 
@@ -60,13 +60,11 @@ jobs:
             if [ ${BASE_BRANCH} == ${MASTER_BRANCH} ]
             then
               echo "GITFLOW_ALLOWED=true" >> $GITHUB_ENV
-              exit 0
             fi
 
             if [ ${BASE_BRANCH} == ${DEVELOP_BRANCH} ]
             then
               echo "GITFLOW_ALLOWED=true" >> $GITHUB_ENV
-              exit 0
             fi
           fi
 
@@ -76,17 +74,14 @@ jobs:
             if [ ${BASE_BRANCH} == ${MASTER_BRANCH} ]
             then
               echo "GITFLOW_ALLOWED=true" >> $GITHUB_ENV
-              exit 0
             fi
 
             if [ ${BASE_BRANCH} == ${DEVELOP_BRANCH} ]
             then
               echo "GITFLOW_ALLOWED=true" >> $GITHUB_ENV
-              exit 0
             fi
           fi
 
-          echo "GITFLOW_ALLOWED=false" >> $GITHUB_ENV
       
       - name: Close the PR
         if: ${{ env.GITFLOW_ALLOWED == false }}
