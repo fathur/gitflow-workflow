@@ -29,9 +29,14 @@ jobs:
   allowed:
     name: Allow the PR
     runs-on: ubuntu-latest
-    if: github.event.action == 'opened' || github.event.action == 'reopened' || github.event.action == 'synchronize'
     steps:
-      - name: Check the branch
+      - name: Check the branch passive
+        if: github.event.action != 'opened' && github.event.action != 'reopened' && github.event.action != 'synchronize'
+        run: |
+          echo "GITFLOW_ALLOWED=true" >> $GITHUB_ENV
+
+      - name: Check the branch active
+        if: github.event.action == 'opened' || github.event.action == 'reopened' || github.event.action == 'synchronize'
         run: |
           HEAD_BRANCH=${{ github.event.pull_request.head.ref }}
           BASE_BRANCH=${{ github.event.pull_request.base.ref }}
