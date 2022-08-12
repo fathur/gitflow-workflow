@@ -133,7 +133,7 @@ jobs:
           BRANCH=${GITHUB_HEAD_REF}
           echo "BRANCH=${BRANCH}" >> $GITHUB_ENV
 
-          BRANCH_NORMALIZED=$(echo ${BRANCH} | awk '{print tolower($0)}' | sed -e 's/\//-/g')
+          BRANCH_NORMALIZED=$(echo ${BRANCH} | awk '{print tolower($0)}' | sed -e 's/\//-/g; 's/\./-/g')
           SUBDOMAIN=${BRANCH_NORMALIZED}-${PR_NUMBER}
           echo "SUBDOMAIN=${SUBDOMAIN}" >> $GITHUB_ENV
           echo "URL=https://${SUBDOMAIN}.fathur.com/" >> $GITHUB_ENV
@@ -184,3 +184,43 @@ jobs:
           method: 'POST'
           customHeaders: '{"Content-Type": "application/x-www-form-urlencoded", "Accept": "application/json"}'
           data: 'branch=${{ env.BRANCH }}&pr_number=${{ github.event.number }}'
+
+  auto_merge:
+    needs: allowed
+    if: github.event.action == 'closed' && github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check allow to auto merge
+        run: |
+          DEVELOP_BRANCH="develop"
+          MASTER_BRANCH="main"
+
+          HEAD_BRANCH=${{ github.event.pull_request.head.ref }}
+          BASE_BRANCH=${{ github.event.pull_request.base.ref }}
+
+          echo "GITFLOW_AUTO_MERGE=false" >> $GITHUB_ENV
+
+          if [[ ${HEAD_BRANCH} == "release/"* ]]
+          then
+            if [ ${BASE_BRANCH} == ${MASTER_BRANCH} ]
+            then
+              echo "GITFLOW_AUTO_MERGE=true" >> $GITHUB_ENV
+            fi
+          fi
+
+          if [[ ${HEAD_BRANCH} == "hotfix/"* ]]
+          then
+            if [ ${BASE_BRANCH} == ${MASTER_BRANCH} ]
+            then
+              echo "GITFLOW_AUTO_MERGE=true" >> $GITHUB_ENV
+            fi
+          fi
+
+      - name: Merge to desired branch
+        if: ${{ env.GITFLOW_AUTO_MERGE == 'true' }}
+        uses: devmasx/merge-branch@master
+        with:
+          type: now
+          from_branch: ${{ github.event.pull_request.head.ref }}
+          target_branch: ${{ github.event.pull_request.base.ref }}
+          github_token: ${{ secret.ACCESS_TOKEN }}
