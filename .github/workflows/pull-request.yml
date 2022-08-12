@@ -82,7 +82,9 @@ jobs:
             fi
           fi
 
-      
+      - name: what is content
+        run: echo "${{ env.GITFLOW_ALLOWED }}"
+
       - name: Close the PR
         if: ${{ env.GITFLOW_ALLOWED == false }}
         uses: superbrothers/close-pull-request@v3
