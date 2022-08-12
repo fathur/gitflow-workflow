@@ -43,11 +43,13 @@ jobs:
 
             if [ ${BASE_BRANCH} == ${DEVELOP_BRANCH} ]
             then
+              echo "::set-env name=GITFLOW_ALLOWED::true"
               exit 0
             fi
 
             if [[ ${BASE_BRANCH} == "release/"* ]]
             then
+              echo "::set-env name=GITFLOW_ALLOWED::true"
               exit 0
             fi
           fi
@@ -57,11 +59,13 @@ jobs:
 
             if [ ${BASE_BRANCH} == ${MASTER_BRANCH} ]
             then
+              echo "::set-env name=GITFLOW_ALLOWED::true"
               exit 0
             fi
 
             if [ ${BASE_BRANCH} == ${DEVELOP_BRANCH} ]
             then
+              echo "::set-env name=GITFLOW_ALLOWED::true"
               exit 0
             fi
           fi
@@ -71,16 +75,28 @@ jobs:
 
             if [ ${BASE_BRANCH} == ${MASTER_BRANCH} ]
             then
+              echo "::set-env name=GITFLOW_ALLOWED::true"
               exit 0
             fi
 
             if [ ${BASE_BRANCH} == ${DEVELOP_BRANCH} ]
             then
+              echo "::set-env name=GITFLOW_ALLOWED::true"
               exit 0
             fi
           fi
 
+          echo "::set-env name=GITFLOW_ALLOWED::false"
           exit 1
+
+      - name: Test
+        run: |
+          echo ${GITFLOW_ALLOWED}
+      
+      # - name: Close the PR
+      #   uses: superbrothers/close-pull-request@v3
+      #   with:
+      #     comment: "Your PR violate gitflow workflow. Sorry we must close it."
   
   guess_subdomain:
     name: Guess subdomain
