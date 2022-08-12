@@ -17,6 +17,25 @@ on:
       - 'main'
 
 jobs:
+
+  # Check if PR is allowed to target branch, if not allowed close the PR immedietly!
+  # Allowed:
+  # feature/** -> develop
+  # release/** -> main
+  # release/** -> develop  # Auto merge
+  # feature/** -> release/**  # Bugfix
+  # hotfix/** -> main
+  # hotfix/** -> develop  # Auto merge
+  allowed:
+    name: Allow the PR
+    runs-on: ubuntu-latest
+    if: github.event.action == 'opened' || github.event.action == 'reopened' || github.event.action == 'synchronize'
+    run: |
+      CURRENT_BRANCH=${GITHUB_HEAD_REF}
+      TARGET_BRANCH=${{ github.event.pull_request.base.ref }}
+      echo "${CURRENT_BRANCH}"
+      echo "${TARGET_BRANCH}"
+      exit 1
   
   guess_subdomain:
     name: Guess subdomain
@@ -45,6 +64,9 @@ jobs:
     needs: guess_subdomain
     runs-on: ubuntu-latest
     steps:
+
+
+
 
       - if: github.event.action == 'opened'
         name: Call open PR
