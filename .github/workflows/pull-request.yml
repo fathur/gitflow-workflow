@@ -96,10 +96,10 @@ jobs:
           echo 'true'
           echo ${GITFLOW_ALLOWED}
           echo "---"
-          echo ${GITFLOW_ALLOWED} == true
-          echo ${GITFLOW_ALLOWED} == "true"
-          echo ${GITFLOW_ALLOWED} == 'true'
-          echo ${GITFLOW_ALLOWED} == ${GITFLOW_ALLOWED}
+          echo [${GITFLOW_ALLOWED} == true]
+          echo [${GITFLOW_ALLOWED} == "true"]
+          echo [${GITFLOW_ALLOWED} == 'true']
+          echo [${GITFLOW_ALLOWED} == ${GITFLOW_ALLOWED}]
       
       # - name: Close the PR
       #   uses: superbrothers/close-pull-request@v3
