@@ -38,43 +38,43 @@ jobs:
           DEVELOP_BRANCH="develop"
           MASTER_BRANCH="main"
           
-          if ${{ startsWith("feature/", github.event.pull_request.head.ref) }}
+          if [[ ${HEAD_BRANCH} == "feature/"* ]]
           then
 
-            if [${BASE_BRANCH} == ${DEVELOP_BRANCH} ]
+            if [ ${BASE_BRANCH} == ${DEVELOP_BRANCH} ]
             then
               exit 0
             fi
 
-            if ${{ startsWith("release/", github.event.pull_request.base.ref) }}
+            if [[ ${BASE_BRANCH} == "release/"* ]]
             then
               exit 0
             fi
           fi
 
-          if ${{ startsWith("release/", github.event.pull_request.head.ref) }}
+          if [[ ${HEAD_BRANCH} == "release/"* ]]
           then
 
-            if [${BASE_BRANCH} == ${MASTER_BRANCH} ]
+            if [ ${BASE_BRANCH} == ${MASTER_BRANCH} ]
             then
               exit 0
             fi
 
-            if [${BASE_BRANCH} == ${DEVELOP_BRANCH} ]
+            if [ ${BASE_BRANCH} == ${DEVELOP_BRANCH} ]
             then
               exit 0
             fi
           fi
 
-          if ${{ startsWith("hotfix/", github.event.pull_request.head.ref) }}
+          if [[ ${HEAD_BRANCH} == "hotfix/"* ]]
           then
 
-            if [${BASE_BRANCH} == ${MASTER_BRANCH} ]
+            if [ ${BASE_BRANCH} == ${MASTER_BRANCH} ]
             then
               exit 0
             fi
 
-            if [${BASE_BRANCH} == ${DEVELOP_BRANCH} ]
+            if [ ${BASE_BRANCH} == ${DEVELOP_BRANCH} ]
             then
               exit 0
             fi
