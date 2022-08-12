@@ -27,7 +27,7 @@ jobs:
   # hotfix/** -> main
   # hotfix/** -> develop  # Auto merge
   allowed:
-    name: Allow the PR
+    name: Is PR allowed?
     runs-on: ubuntu-latest
     steps:
       - name: Check the branch passive
@@ -98,79 +98,89 @@ jobs:
         run: |
           exit 1
   
-  guess_subdomain:
-    name: Guess subdomain
+  # guess_subdomain:
+  #   name: Guess subdomain
+  #   needs: allowed
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Generate or guess subdomain url 
+  #       id: subdomain
+  #       run: |
+  #         PR_NUMBER=${{ github.event.number }}
+
+  #         BRANCH=${GITHUB_HEAD_REF}
+  #         echo "::set-output name=branch::${BRANCH}"
+
+  #         BRANCH_NORMALIZED=$(echo ${BRANCH} | awk '{print tolower($0)}' | sed -e 's/\//-/g')
+  #         SUBDOMAIN=${BRANCH_NORMALIZED}-${PR_NUMBER}
+  #         echo "::set-output name=subdomain::${SUBDOMAIN}" 
+  #         echo "::set-output name=url::https://${SUBDOMAIN}.fathur.com/"
+  #   outputs:
+  #     branch: ${{ steps.subdomain.outputs.branch }}
+  #     subdomain: ${{ steps.subdomain.outputs.subdomain }}
+  #     url: ${{ steps.subdomain.outputs.url }}
+  #     gitflow_server: http://13.214.207.68
+
+  build:
+    name: Build environment 
     needs: allowed
     runs-on: ubuntu-latest
     steps:
-      - name: Generate or guess subdomain url 
-        id: subdomain
+      - name: Set variables
         run: |
           PR_NUMBER=${{ github.event.number }}
 
           BRANCH=${GITHUB_HEAD_REF}
-          echo "::set-output name=branch::${BRANCH}"
+          echo "BRANCH=${BRANCH}" >> $GITHUB_ENV
 
           BRANCH_NORMALIZED=$(echo ${BRANCH} | awk '{print tolower($0)}' | sed -e 's/\//-/g')
           SUBDOMAIN=${BRANCH_NORMALIZED}-${PR_NUMBER}
-          echo "::set-output name=subdomain::${SUBDOMAIN}" 
-          echo "::set-output name=url::https://${SUBDOMAIN}.fathur.com/"
-    outputs:
-      branch: ${{ steps.subdomain.outputs.branch }}
-      subdomain: ${{ steps.subdomain.outputs.subdomain }}
-      url: ${{ steps.subdomain.outputs.url }}
-      gitflow_server: http://13.214.207.68
-
-  build:
-    name: Build environment 
-    needs: guess_subdomain
-    runs-on: ubuntu-latest
-    steps:
-
-
+          echo "SUBDOMAIN=${SUBDOMAIN}" >> $GITHUB_ENV
+          echo "URL=https://${SUBDOMAIN}.fathur.com/" >> $GITHUB_ENV
+          echo "GITFLOW_SERVER=http://13.214.207.68" >> $GITHUB_ENV
 
 
       - if: github.event.action == 'opened'
         name: Call open PR
         uses: fjogeleit/http-request-action@v1
         with:
-          url: '${{ needs.guess_subdomain.outputs.gitflow_server }}/api/sub-domains/${{ needs.guess_subdomain.outputs.subdomain }}'
+          url: '${{ env.GITFLOW_SERVER }}/api/sub-domains/${{ env.SUBDOMAIN }}'
           method: 'POST'
           customHeaders: '{"Content-Type": "application/x-www-form-urlencoded", "Accept": "application/json"}'
-          data: 'branch=${{ needs.guess_subdomain.outputs.branch }}&pr_number=${{ github.event.number }}'
+          data: 'branch=${{ env.BRANCH }}&pr_number=${{ github.event.number }}'
 
       - if: github.event.action == 'synchronize'
         name: Call synchronize PR
         uses: fjogeleit/http-request-action@v1
         with:
-          url: '${{ needs.guess_subdomain.outputs.gitflow_server }}/api/sub-domains/${{ needs.guess_subdomain.outputs.subdomain }}'
+          url: '${{ env.GITFLOW_SERVER }}/api/sub-domains/${{ env.SUBDOMAIN }}'
           method: 'PUT'
           customHeaders: '{"Content-Type": "application/x-www-form-urlencoded", "Accept": "application/json"}'
-          data: 'branch=${{ needs.guess_subdomain.outputs.branch }}&pr_number=${{ github.event.number }}'
+          data: 'branch=${{ env.BRANCH }}&pr_number=${{ github.event.number }}'
 
       - if: github.event.action == 'closed' && github.event.pull_request.merged == true
         name: Call merge PR
         uses: fjogeleit/http-request-action@v1
         with:
-          url: '${{ needs.guess_subdomain.outputs.gitflow_server }}/api/sub-domains/${{ needs.guess_subdomain.outputs.subdomain }}'
+          url: '${{ env.GITFLOW_SERVER }}/api/sub-domains/${{ env.SUBDOMAIN }}'
           method: 'DELETE'
           customHeaders: '{"Content-Type": "application/x-www-form-urlencoded", "Accept": "application/json"}'
-          data: 'branch=${{ needs.guess_subdomain.outputs.branch }}&pr_number=${{ github.event.number }}&merged=true&target_branch=developer+master'
+          data: 'branch=${{ env.BRANCH }}&pr_number=${{ github.event.number }}&merged=true&target_branch=developer+master'
 
       - if: github.event.action == 'closed' && github.event.pull_request.merged == false
         name: Call close PR
         uses: fjogeleit/http-request-action@v1
         with:
-          url: '${{ needs.guess_subdomain.outputs.gitflow_server }}/api/sub-domains/${{ needs.guess_subdomain.outputs.subdomain }}'
+          url: '${{ env.GITFLOW_SERVER }}/api/sub-domains/${{ env.SUBDOMAIN }}'
           method: 'DELETE'
           customHeaders: '{"Content-Type": "application/x-www-form-urlencoded", "Accept": "application/json"}'
-          data: 'branch=${{ needs.guess_subdomain.outputs.branch }}&pr_number=${{ github.event.number }}&merged=false'
+          data: 'branch=${{ env.BRANCH }}&pr_number=${{ github.event.number }}&merged=false'
 
       - if: github.event.action == 'reopened'
         name: Call reopen PR
         uses: fjogeleit/http-request-action@v1
         with:
-          url: '${{ needs.guess_subdomain.outputs.gitflow_server }}/api/sub-domains/${{ needs.guess_subdomain.outputs.subdomain }}'
+          url: '${{ env.GITFLOW_SERVER }}/api/sub-domains/${{ env.SUBDOMAIN }}'
           method: 'POST'
           customHeaders: '{"Content-Type": "application/x-www-form-urlencoded", "Accept": "application/json"}'
-          data: 'branch=${{ needs.guess_subdomain.outputs.branch }}&pr_number=${{ github.event.number }}'
+          data: 'branch=${{ env.BRANCH }}&pr_number=${{ github.event.number }}'
