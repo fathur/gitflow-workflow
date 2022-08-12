@@ -31,7 +31,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check the branch passive
-        if: github.event.action != 'opened' && github.event.action != 'reopened' && github.event.action != 'synchronize'
+        if: github.event.action == 'closed'
         run: |
           echo "GITFLOW_ALLOWED=true" >> $GITHUB_ENV
 
