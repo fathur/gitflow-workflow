@@ -1,0 +1,186 @@
+# When creating a pull request we can generate
+# a unique url for particular pull request.
+# This url is using for test the feature, release
+# or hotfix before it merge to the base branch.
+#
+# To manage resource carefull we must identify the action type.
+# If the action type is pr created or reponed the we generate a new url,
+# if the action type is syncronized then we use existing
+# url to be redeployed, if the action type is PR closed we 
+# delete the url.
+name: Testing
+on: 
+  pull_request:
+    types: [opened, synchronize, closed, reopened]
+    branches:
+      - 'develop'
+      - 'main'
+
+jobs:
+
+  # Check if PR is allowed to target branch, if not allowed close the PR immedietly!
+  # Allowed:
+  # feature/** -> develop
+  # release/** -> main
+  # release/** -> develop  # Auto merge
+  # feature/** -> release/**  # Bugfix
+  # hotfix/** -> main
+  # hotfix/** -> develop  # Auto merge
+  allowed:
+    name: Is PR allowed?
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check the branch passive
+        if: github.event.action == 'closed'
+        run: |
+          echo "GITFLOW_ALLOWED=true" >> $GITHUB_ENV
+
+      - name: Check the branch active
+        if: github.event.action == 'opened' || github.event.action == 'reopened' || github.event.action == 'synchronize'
+        run: |
+          HEAD_BRANCH=${{ github.event.pull_request.head.ref }}
+          BASE_BRANCH=${{ github.event.pull_request.base.ref }}
+          DEVELOP_BRANCH="develop"
+          MASTER_BRANCH="main"
+          
+          echo "GITFLOW_ALLOWED=false" >> $GITHUB_ENV
+          
+          if [[ ${HEAD_BRANCH} == "feature/"* ]]
+          then
+
+            if [ ${BASE_BRANCH} == ${DEVELOP_BRANCH} ]
+            then
+              echo "GITFLOW_ALLOWED=true" >> $GITHUB_ENV
+            fi
+
+            if [[ ${BASE_BRANCH} == "release/"* ]]
+            then
+              echo "GITFLOW_ALLOWED=true" >> $GITHUB_ENV
+            fi
+          fi
+
+          if [[ ${HEAD_BRANCH} == "release/"* ]]
+          then
+
+            if [ ${BASE_BRANCH} == ${MASTER_BRANCH} ]
+            then
+              echo "GITFLOW_ALLOWED=true" >> $GITHUB_ENV
+            fi
+
+            if [ ${BASE_BRANCH} == ${DEVELOP_BRANCH} ]
+            then
+              echo "GITFLOW_ALLOWED=true" >> $GITHUB_ENV
+            fi
+          fi
+
+          if [[ ${HEAD_BRANCH} == "hotfix/"* ]]
+          then
+
+            if [ ${BASE_BRANCH} == ${MASTER_BRANCH} ]
+            then
+              echo "GITFLOW_ALLOWED=true" >> $GITHUB_ENV
+            fi
+
+            if [ ${BASE_BRANCH} == ${DEVELOP_BRANCH} ]
+            then
+              echo "GITFLOW_ALLOWED=true" >> $GITHUB_ENV
+            fi
+          fi
+
+      - name: Close the PR
+        if: ${{ env.GITFLOW_ALLOWED == 'false' }}
+        uses: peter-evans/close-pull@v2
+        with:
+          comment: "Your PR violate gitflow workflow. Sorry we must close it."
+          
+      - name: Cancel the job
+        if: ${{ env.GITFLOW_ALLOWED == 'false' }}
+        run: |
+          exit 1
+  
+  # guess_subdomain:
+  #   name: Guess subdomain
+  #   needs: allowed
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Generate or guess subdomain url 
+  #       id: subdomain
+  #       run: |
+  #         PR_NUMBER=${{ github.event.number }}
+
+  #         BRANCH=${GITHUB_HEAD_REF}
+  #         echo "::set-output name=branch::${BRANCH}"
+
+  #         BRANCH_NORMALIZED=$(echo ${BRANCH} | awk '{print tolower($0)}' | sed -e 's/\//-/g')
+  #         SUBDOMAIN=${BRANCH_NORMALIZED}-${PR_NUMBER}
+  #         echo "::set-output name=subdomain::${SUBDOMAIN}" 
+  #         echo "::set-output name=url::https://${SUBDOMAIN}.fathur.com/"
+  #   outputs:
+  #     branch: ${{ steps.subdomain.outputs.branch }}
+  #     subdomain: ${{ steps.subdomain.outputs.subdomain }}
+  #     url: ${{ steps.subdomain.outputs.url }}
+  #     gitflow_server: http://13.214.207.68
+
+  build:
+    name: Build environment 
+    needs: allowed
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set variables
+        run: |
+          PR_NUMBER=${{ github.event.number }}
+
+          BRANCH=${GITHUB_HEAD_REF}
+          echo "BRANCH=${BRANCH}" >> $GITHUB_ENV
+
+          BRANCH_NORMALIZED=$(echo ${BRANCH} | awk '{print tolower($0)}' | sed -e 's/\//-/g')
+          SUBDOMAIN=${BRANCH_NORMALIZED}-${PR_NUMBER}
+          echo "SUBDOMAIN=${SUBDOMAIN}" >> $GITHUB_ENV
+          echo "URL=https://${SUBDOMAIN}.fathur.com/" >> $GITHUB_ENV
+          echo "GITFLOW_SERVER=http://13.214.207.68" >> $GITHUB_ENV
+
+
+      - if: github.event.action == 'opened'
+        name: Call open PR
+        uses: fjogeleit/http-request-action@v1
+        with:
+          url: '${{ env.GITFLOW_SERVER }}/api/sub-domains/${{ env.SUBDOMAIN }}'
+          method: 'POST'
+          customHeaders: '{"Content-Type": "application/x-www-form-urlencoded", "Accept": "application/json"}'
+          data: 'branch=${{ env.BRANCH }}&pr_number=${{ github.event.number }}'
+
+      - if: github.event.action == 'synchronize'
+        name: Call synchronize PR
+        uses: fjogeleit/http-request-action@v1
+        with:
+          url: '${{ env.GITFLOW_SERVER }}/api/sub-domains/${{ env.SUBDOMAIN }}'
+          method: 'PUT'
+          customHeaders: '{"Content-Type": "application/x-www-form-urlencoded", "Accept": "application/json"}'
+          data: 'branch=${{ env.BRANCH }}&pr_number=${{ github.event.number }}'
+
+      - if: github.event.action == 'closed' && github.event.pull_request.merged == true
+        name: Call merge PR
+        uses: fjogeleit/http-request-action@v1
+        with:
+          url: '${{ env.GITFLOW_SERVER }}/api/sub-domains/${{ env.SUBDOMAIN }}'
+          method: 'DELETE'
+          customHeaders: '{"Content-Type": "application/x-www-form-urlencoded", "Accept": "application/json"}'
+          data: 'branch=${{ env.BRANCH }}&pr_number=${{ github.event.number }}&merged=true&target_branch=developer+master'
+
+      - if: github.event.action == 'closed' && github.event.pull_request.merged == false
+        name: Call close PR
+        uses: fjogeleit/http-request-action@v1
+        with:
+          url: '${{ env.GITFLOW_SERVER }}/api/sub-domains/${{ env.SUBDOMAIN }}'
+          method: 'DELETE'
+          customHeaders: '{"Content-Type": "application/x-www-form-urlencoded", "Accept": "application/json"}'
+          data: 'branch=${{ env.BRANCH }}&pr_number=${{ github.event.number }}&merged=false'
+
+      - if: github.event.action == 'reopened'
+        name: Call reopen PR
+        uses: fjogeleit/http-request-action@v1
+        with:
+          url: '${{ env.GITFLOW_SERVER }}/api/sub-domains/${{ env.SUBDOMAIN }}'
+          method: 'POST'
+          customHeaders: '{"Content-Type": "application/x-www-form-urlencoded", "Accept": "application/json"}'
+          data: 'branch=${{ env.BRANCH }}&pr_number=${{ github.event.number }}'
