@@ -82,9 +82,6 @@ jobs:
             fi
           fi
 
-      - name: what is content
-        run: echo "${{ env.GITFLOW_ALLOWED }}"
-
       - name: Close the PR
         if: ${{ env.GITFLOW_ALLOWED == 'false' }}
         uses: peter-evans/close-pull@v2
@@ -92,7 +89,7 @@ jobs:
           comment: "Your PR violate gitflow workflow. Sorry we must close it."
           
       - name: Cancel the job
-        if: ${{ env.GITFLOW_ALLOWED == false }}
+        if: ${{ env.GITFLOW_ALLOWED == 'false' }}
         run: |
           exit 1
   
