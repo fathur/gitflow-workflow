@@ -38,19 +38,19 @@ jobs:
           DEVELOP_BRANCH="develop"
           MASTER_BRANCH="main"
           
+          echo "GITFLOW_ALLOWED=false" >> $GITHUB_ENV
+          
           if [[ ${HEAD_BRANCH} == "feature/"* ]]
           then
 
             if [ ${BASE_BRANCH} == ${DEVELOP_BRANCH} ]
             then
               echo "GITFLOW_ALLOWED=true" >> $GITHUB_ENV
-              exit 0
             fi
 
             if [[ ${BASE_BRANCH} == "release/"* ]]
             then
               echo "GITFLOW_ALLOWED=true" >> $GITHUB_ENV
-              exit 0
             fi
           fi
 
@@ -60,13 +60,11 @@ jobs:
             if [ ${BASE_BRANCH} == ${MASTER_BRANCH} ]
             then
               echo "GITFLOW_ALLOWED=true" >> $GITHUB_ENV
-              exit 0
             fi
 
             if [ ${BASE_BRANCH} == ${DEVELOP_BRANCH} ]
             then
               echo "GITFLOW_ALLOWED=true" >> $GITHUB_ENV
-              exit 0
             fi
           fi
 
@@ -76,28 +74,24 @@ jobs:
             if [ ${BASE_BRANCH} == ${MASTER_BRANCH} ]
             then
               echo "GITFLOW_ALLOWED=true" >> $GITHUB_ENV
-              exit 0
             fi
 
             if [ ${BASE_BRANCH} == ${DEVELOP_BRANCH} ]
             then
               echo "GITFLOW_ALLOWED=true" >> $GITHUB_ENV
-              exit 0
             fi
           fi
 
-          echo "GITFLOW_ALLOWED=false" >> $GITHUB_ENV
-          exit 1
-
-      - name: Test
-        run: |
-          echo ${GITFLOW_ALLOWED}
-      
       - name: Close the PR
-        if: ${{ env.GITFLOW_ALLOWED == false }}
-        uses: superbrothers/close-pull-request@v3
+        if: ${{ env.GITFLOW_ALLOWED == 'false' }}
+        uses: peter-evans/close-pull@v2
         with:
           comment: "Your PR violate gitflow workflow. Sorry we must close it."
+          
+      - name: Cancel the job
+        if: ${{ env.GITFLOW_ALLOWED == 'false' }}
+        run: |
+          exit 1
   
   guess_subdomain:
     name: Guess subdomain
