@@ -33,12 +33,52 @@ jobs:
     steps:
       - name: Check the branch
         run: |
-          CURRENT_BRANCH=${GITHUB_HEAD_REF}
-          TARGET_BRANCH=${{ github.event.pull_request.base.ref }}
-          echo "${CURRENT_BRANCH}"
-          echo "${TARGET_BRANCH}"
+          HEAD_BRANCH=${{ github.event.pull_request.head.ref }}
+          BASE_BRANCH=${{ github.event.pull_request.base.ref }}
+          DEVELOP_BRANCH="develop"
+          MASTER_BRANCH="main"
+          
+          if ${{ startsWith("feature/", github.event.pull_request.head.ref) }}
+          then
 
-          echo "${{ toJson(github.event) }}"
+            if [${BASE_BRANCH} == ${DEVELOP_BRANCH} ]
+            then
+              exit 0
+            fi
+
+            if ${{ startsWith("release/", github.event.pull_request.base.ref) }}
+            then
+              exit 0
+            fi
+          fi
+
+          if ${{ startsWith("release/", github.event.pull_request.head.ref) }}
+          then
+
+            if [${BASE_BRANCH} == ${MASTER_BRANCH} ]
+            then
+              exit 0
+            fi
+
+            if [${BASE_BRANCH} == ${DEVELOP_BRANCH} ]
+            then
+              exit 0
+            fi
+          fi
+
+          if ${{ startsWith("hotfix/", github.event.pull_request.head.ref) }}
+          then
+
+            if [${BASE_BRANCH} == ${MASTER_BRANCH} ]
+            then
+              exit 0
+            fi
+
+            if [${BASE_BRANCH} == ${DEVELOP_BRANCH} ]
+            then
+              exit 0
+            fi
+          fi
 
           exit 1
   
