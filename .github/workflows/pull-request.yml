@@ -86,7 +86,7 @@ jobs:
         run: echo "${{ env.GITFLOW_ALLOWED }}"
 
       - name: Close the PR
-        if: ${{ env.GITFLOW_ALLOWED == false }}
+        if: ${{ env.GITFLOW_ALLOWED == 'false' }}
         uses: superbrothers/close-pull-request@v3
         with:
           comment: "Your PR violate gitflow workflow. Sorry we must close it."
