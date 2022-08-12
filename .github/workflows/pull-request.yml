@@ -91,6 +91,9 @@ jobs:
 
       - name: Test
         run: |
+          echo true
+          echo "true"
+          echo 'true'
           echo ${GITFLOW_ALLOWED}
       
       # - name: Close the PR
