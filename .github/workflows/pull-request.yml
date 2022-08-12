@@ -37,7 +37,7 @@ jobs:
           TARGET_BRANCH=${{ github.event.pull_request.base.ref }}
           echo "${CURRENT_BRANCH}"
           echo "${TARGET_BRANCH}"
-          exit 1
+          exit 0
   
   guess_subdomain:
     name: Guess subdomain
