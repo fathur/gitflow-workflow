@@ -38,7 +38,7 @@ jobs:
           DEVELOP_BRANCH="develop"
           MASTER_BRANCH="main"
           
-          if ${{ startsWith("feature/", github.event.pull_request.head.ref) }}
+          if ${{ startsWith('feature/', github.event.pull_request.head.ref) }}
           then
 
             if [${BASE_BRANCH} == ${DEVELOP_BRANCH} ]
@@ -46,13 +46,13 @@ jobs:
               exit 0
             fi
 
-            if ${{ startsWith("release/", github.event.pull_request.base.ref) }}
+            if ${{ startsWith('release/', github.event.pull_request.base.ref) }}
             then
               exit 0
             fi
           fi
 
-          if ${{ startsWith("release/", github.event.pull_request.head.ref) }}
+          if ${{ startsWith('release/', github.event.pull_request.head.ref) }}
           then
 
             if [${BASE_BRANCH} == ${MASTER_BRANCH} ]
@@ -66,7 +66,7 @@ jobs:
             fi
           fi
 
-          if ${{ startsWith("hotfix/", github.event.pull_request.head.ref) }}
+          if ${{ startsWith('hotfix/', github.event.pull_request.head.ref) }}
           then
 
             if [${BASE_BRANCH} == ${MASTER_BRANCH} ]
