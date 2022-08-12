@@ -87,41 +87,17 @@ jobs:
           fi
 
           echo "GITFLOW_ALLOWED=false" >> $GITHUB_ENV
-          exit 1
-
-      - name: Test
-        run: |
-          echo true
-          echo "true"
-          echo 'true'
-          echo ${GITFLOW_ALLOWED}
-          echo "---"
-          
-          if [ ${GITFLOW_ALLOWED} == ${GITFLOW_ALLOWED} ]
-          then
-            echo "sama"
-          fi
-          
-          if [ ${GITFLOW_ALLOWED} == true ]
-          then
-            echo "sama"
-          fi
-          
-          if [ ${GITFLOW_ALLOWED} == "true" ]
-          then
-            echo "sama"
-          fi
-          
-          if [ ${GITFLOW_ALLOWED} == 'true' ]
-          then
-            echo "sama"
-          fi
       
       - name: Close the PR
         if: ${{ env.GITFLOW_ALLOWED == false }}
         uses: superbrothers/close-pull-request@v3
         with:
           comment: "Your PR violate gitflow workflow. Sorry we must close it."
+          
+      - name: Cancel the job
+        if: ${{ env.GITFLOW_ALLOWED == false }}
+        run: |
+          exit 1
   
   guess_subdomain:
     name: Guess subdomain
