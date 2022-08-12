@@ -43,13 +43,13 @@ jobs:
 
             if [ ${BASE_BRANCH} == ${DEVELOP_BRANCH} ]
             then
-              echo "::set-env name=GITFLOW_ALLOWED::true"
+              echo "GITFLOW_ALLOWED=true" >> $GITHUB_ENV
               exit 0
             fi
 
             if [[ ${BASE_BRANCH} == "release/"* ]]
             then
-              echo "::set-env name=GITFLOW_ALLOWED::true"
+              echo "GITFLOW_ALLOWED=true" >> $GITHUB_ENV
               exit 0
             fi
           fi
@@ -59,13 +59,13 @@ jobs:
 
             if [ ${BASE_BRANCH} == ${MASTER_BRANCH} ]
             then
-              echo "::set-env name=GITFLOW_ALLOWED::true"
+              echo "GITFLOW_ALLOWED=true" >> $GITHUB_ENV
               exit 0
             fi
 
             if [ ${BASE_BRANCH} == ${DEVELOP_BRANCH} ]
             then
-              echo "::set-env name=GITFLOW_ALLOWED::true"
+              echo "GITFLOW_ALLOWED=true" >> $GITHUB_ENV
               exit 0
             fi
           fi
@@ -75,18 +75,18 @@ jobs:
 
             if [ ${BASE_BRANCH} == ${MASTER_BRANCH} ]
             then
-              echo "::set-env name=GITFLOW_ALLOWED::true"
+              echo "GITFLOW_ALLOWED=true" >> $GITHUB_ENV
               exit 0
             fi
 
             if [ ${BASE_BRANCH} == ${DEVELOP_BRANCH} ]
             then
-              echo "::set-env name=GITFLOW_ALLOWED::true"
+              echo "GITFLOW_ALLOWED=true" >> $GITHUB_ENV
               exit 0
             fi
           fi
 
-          echo "::set-env name=GITFLOW_ALLOWED::false"
+          echo "GITFLOW_ALLOWED=false" >> $GITHUB_ENV
           exit 1
 
       - name: Test
